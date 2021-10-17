@@ -15,6 +15,7 @@ export default class Sketch {
     this.height = this.container.offsetHeight;
 
     this.videos = [];
+    this.videoObjects = new THREE.Group();
 
     console.log( this.width, this.height );
 
@@ -53,7 +54,15 @@ export default class Sketch {
     this.container.appendChild( this.renderer.domElement );
 
     this.controls = new OrbitControls( this.camera, this.renderer.domElement );
-    this.controls.rotateSpeed = 0.5;
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.2;
+    this.controls.enablePan = false;
+    this.controls.minPolarAngle = Math.PI / 2 - Math.PI / 10;
+    this.controls.maxPolarAngle = Math.PI / 2 + Math.PI / 10;
+    this.controls.autoRotate = true;
+    this.controls.autoRotateSpeed = 0.01;
+
+    this.controls.update();
 
     this.setupListeners();
     this.addObjects();
@@ -96,7 +105,6 @@ export default class Sketch {
 
   addObjects() {
     const rotation = Math.PI / 6;
-    const group = new THREE.Group();
 
     const count = 6;
     for ( let i = 0; i < count; i ++ ) {
@@ -114,16 +122,17 @@ export default class Sketch {
       this.videos.push( player );
 
       el.object.lookAt( 0, 0, 0 );
-      group.add( el.object );
+      this.videoObjects.add( el.object );
     }
 
-    this.scene.add( group );
+    this.scene.add( this.videoObjects );
   }
 
   render() {
     this.time += 0.05;
-    // this.mesh.rotation.x = this.time / 20;
-    // this.mesh.rotation.y = this.time / 10;
+    // this.camera.rotation.y = this.time;
+    this.videoObjects.rotation.y = this.time / 30;
+    this.controls.update();
 
     this.renderer.render( this.scene, this.camera );
     window.requestAnimationFrame( this.render.bind( this ) );
